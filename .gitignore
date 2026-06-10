@@ -1,0 +1,66 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binaries
+*.test
+
+# Coverage
+*.out
+coverage.out
+coverage.html
+
+# Go workspace
+go.work
+go.work.sum
+
+# Vendor
+vendor/
+
+# IDEs
+.idea/
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Temporary files
+tmp/
+temp/
+
+# Build output
+bin/
+dist/
+build/
+
+# Air
+.air.toml
+
+# Generated files
+*.generated.go
+
+# Docker
+docker-data/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Profiling
+cpu.prof
+mem.prof
+trace.out
