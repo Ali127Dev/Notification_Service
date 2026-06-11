@@ -16,3 +16,7 @@ type NotificationRepository interface {
 type NotificationProducer interface {
 	Publish(*entity.Notification) error
 }
+
+type NotificationConsumer interface {
+	Consume(func(*entity.Notification) error) error
+}
