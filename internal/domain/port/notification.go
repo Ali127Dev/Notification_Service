@@ -1,6 +1,9 @@
 package port
 
-import "github.com/Ali127Dev/Notification_Service/internal/domain/entity"
+import (
+	"github.com/Ali127Dev/Notification_Service/internal/domain/entity"
+	"github.com/Ali127Dev/Notification_Service/internal/domain/event"
+)
 
 type NotificationSender interface {
 	Send(*entity.Notification) error
@@ -14,9 +17,9 @@ type NotificationRepository interface {
 }
 
 type NotificationProducer interface {
-	Publish(*entity.Notification) error
+	Publish(event.NotificationCreated) error
 }
 
 type NotificationConsumer interface {
-	Consume(func(*entity.Notification) error) error
+	Consume(func(event.NotificationCreated) error) error
 }
