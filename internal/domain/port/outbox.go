@@ -1,7 +1,10 @@
 package port
 
-import "context"
+import (
+	"context"
+)
 
-type OutboxPublisher interface {
-	Publish(ctx context.Context, event any) error
+type Outbox interface {
+	WithTx(tx Transaction) Outbox
+	Insert(ctx context.Context, event any) error
 }

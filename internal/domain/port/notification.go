@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/Ali127Dev/Notification_Service/internal/domain/entity"
-	"github.com/Ali127Dev/Notification_Service/internal/domain/event"
 )
 
 type NotificationSender interface {
@@ -12,16 +11,16 @@ type NotificationSender interface {
 }
 
 type NotificationRepository interface {
+	WithTx(tx Transaction) NotificationRepository
+
 	Save(context.Context, *entity.Notification) error
 	Update(context.Context, *entity.Notification) error
 
 	FindByID(context.Context, string) (*entity.Notification, error)
 }
 
-type NotificationProducer interface {
-	Publish(context.Context, event.NotificationCreated) error
-}
+type EventHandler func(ctx context.Context, event any) error
 
 type NotificationConsumer interface {
-	Consume(context.Context, func(event.NotificationCreated) error) error
+	Consume(context.Context, EventHandler) error
 }

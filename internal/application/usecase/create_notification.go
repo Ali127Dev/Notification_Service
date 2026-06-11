@@ -9,19 +9,21 @@ import (
 )
 
 type CreateNotification struct {
-	repo            port.NotificationRepository
-	idGen           port.IDGenerator
-	outboxPublisher port.OutboxPublisher
+	repo   port.NotificationRepository
+	idGen  port.IDGenerator
+	outbox port.Outbox
+	txMgr  port.TransactionManager
 }
 
 func NewCreateNotification(
 	repo port.NotificationRepository,
 	idGen port.IDGenerator,
-	outboxPublisher port.OutboxPublisher,
+	outbox port.Outbox,
+	txMgr port.TransactionManager,
 ) *CreateNotification {
 	return &CreateNotification{
 		repo: repo, idGen: idGen,
-		outboxPublisher: outboxPublisher,
+		outbox: outbox, txMgr: txMgr,
 	}
 }
 
@@ -34,6 +36,15 @@ type CreateNotificationRequest struct {
 }
 
 func (uc *CreateNotification) Execute(ctx context.Context, req CreateNotificationRequest) (*entity.Notification, error) {
+	tx, err := uc.txMgr.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	repo := uc.repo.WithTx(tx)
+	outbox := uc.outbox.WithTx(tx)
+
 	notification, err := entity.NewNotification(
 		uc.idGen.NewID(),
 		req.To,
@@ -46,14 +57,18 @@ func (uc *CreateNotification) Execute(ctx context.Context, req CreateNotificatio
 		return nil, err
 	}
 
-	if err := uc.repo.Save(ctx, notification); err != nil {
+	if err := repo.Save(ctx, notification); err != nil {
 		return nil, err
 	}
 
 	evt := event.NotificationCreated{
 		ID: notification.ID(),
 	}
-	if err := uc.outboxPublisher.Publish(ctx, evt); err != nil {
+	if err := outbox.Insert(ctx, evt); err != nil {
+		return nil, err
+	}
+
+	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
 
