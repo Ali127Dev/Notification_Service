@@ -3,28 +3,25 @@ package usecase
 import (
 	"context"
 
-	"github.com/Ali127Dev/Notification_Service/internal/application/retry"
 	"github.com/Ali127Dev/Notification_Service/internal/domain/entity"
 	"github.com/Ali127Dev/Notification_Service/internal/domain/event"
 	"github.com/Ali127Dev/Notification_Service/internal/domain/port"
 )
 
 type CreateNotification struct {
-	repo           port.NotificationRepository
-	producer       port.NotificationProducer
-	idGen          port.IDGenerator
-	publisherRetry *retry.Runner
+	repo            port.NotificationRepository
+	idGen           port.IDGenerator
+	outboxPublisher port.OutboxPublisher
 }
 
 func NewCreateNotification(
 	repo port.NotificationRepository,
-	producer port.NotificationProducer,
 	idGen port.IDGenerator,
-	publisherRetry *retry.Runner,
+	outboxPublisher port.OutboxPublisher,
 ) *CreateNotification {
 	return &CreateNotification{
-		repo: repo, producer: producer,
-		idGen: idGen, publisherRetry: publisherRetry,
+		repo: repo, idGen: idGen,
+		outboxPublisher: outboxPublisher,
 	}
 }
 
@@ -56,10 +53,7 @@ func (uc *CreateNotification) Execute(ctx context.Context, req CreateNotificatio
 	evt := event.NotificationCreated{
 		ID: notification.ID(),
 	}
-	err = uc.publisherRetry.Do(func() error {
-		return uc.producer.Publish(ctx, evt)
-	})
-	if err != nil {
+	if err := uc.outboxPublisher.Publish(ctx, evt); err != nil {
 		return nil, err
 	}
 

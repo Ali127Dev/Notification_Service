@@ -2,6 +2,6 @@ package port
 
 import "context"
 
-type OutboxPublisher[T comparable] interface {
+type OutboxPublisher interface {
 	Publish(ctx context.Context, event any) error
 }
