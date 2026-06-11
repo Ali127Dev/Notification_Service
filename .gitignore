@@ -46,9 +46,6 @@ bin/
 dist/
 build/
 
-# Air
-.air.toml
-
 # Generated files
 *.generated.go
 

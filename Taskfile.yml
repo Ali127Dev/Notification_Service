@@ -1,0 +1,105 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: "3"
+
+dotenv: [".env"]
+
+vars:
+  APP_NAME: notification-service
+  CMD_DIR: ./cmd
+  MIGRATIONS_DIR: ./migrations
+  GOOSE_DRIVER: postgres
+  GOOSE_DB: "postgres://{{.DB_POSTGRES_USER}}:{{.DB_POSTGRES_PASSWORD}}@{{.DB_POSTGRES_HOST}}:{{.DB_POSTGRES_PORT}}/{{.DB_POSTGRES_DB}}?sslmode=disable"
+
+tasks:
+  # -------------------------
+  # run / build
+  # -------------------------
+
+  run:
+    desc: run server
+    cmds:
+      - go run {{.CMD_DIR}}/main.go
+
+  build:
+    desc: build binary
+    cmds:
+      - go build -o bin/{{.APP_NAME}} {{.CMD_DIR}}
+
+  clean:
+    desc: remove build artifacts
+    cmds:
+      - rm -rf bin
+
+  # -------------------------
+  # dev
+  # -------------------------
+
+  dev:
+    desc: run server with live reload (air)
+    cmds:
+      - air -c .air.toml
+
+  # -------------------------
+  # deps
+  # -------------------------
+
+  deps:
+    desc: tidy go modules
+    cmds:
+      - go mod tidy
+
+  # -------------------------
+  # formatting / lint
+  # -------------------------
+
+  fmt:
+    desc: format code
+    cmds:
+      - go fmt ./...
+
+  lint:
+    desc: run golangci-lint
+    cmds:
+      - golangci-lint run
+
+  # -------------------------
+  # tests
+  # -------------------------
+
+  test:
+    desc: run tests
+    cmds:
+      - go test ./...
+
+  # -------------------------
+  # migrations
+  # -------------------------
+
+  mig:new:
+    desc: create migration
+    requires:
+      vars: [name]
+    cmds:
+      - goose -dir {{.MIGRATIONS_DIR}} create {{.name}} sql
+
+  mig:up:
+    desc: apply migrations
+    cmds:
+      - goose -dir {{.MIGRATIONS_DIR}} {{.GOOSE_DRIVER}} "{{.GOOSE_DB}}" up
+
+  mig:down:
+    desc: rollback last migration
+    cmds:
+      - goose -dir {{.MIGRATIONS_DIR}} {{.GOOSE_DRIVER}} "{{.GOOSE_DB}}" down
+
+  mig:redo:
+    desc: redo last migration
+    cmds:
+      - goose -dir {{.MIGRATIONS_DIR}} {{.GOOSE_DRIVER}} "{{.GOOSE_DB}}" down
+      - goose -dir {{.MIGRATIONS_DIR}} {{.GOOSE_DRIVER}} "{{.GOOSE_DB}}" up
+
+  mig:status:
+    desc: show status
+    cmds:
+      - goose -dir {{.MIGRATIONS_DIR}} {{.GOOSE_DRIVER}} "{{.GOOSE_DB}}" status

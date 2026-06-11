@@ -1,0 +1,25 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+cmd = "go build -o ./tmp/main ./cmd"
+entrypoint = ["./tmp/main"]
+bin = "./tmp"
+include_ext = ["go"]
+exclude_dir = ["vendor", "bin", "tmp", ".git"]
+stop_on_error = true
+
+[build.windows]
+cmd = "go build -o ./tmp/main.exe ./cmd"
+bin = "./tmp"
+entrypoint = ["./tmp/main.exe"]
+
+[log]
+level = "info"
+
+[misc]
+clean_on_exit = true
+
+[screen]
+clear_on_rebuild = true
+keep_scroll = true
