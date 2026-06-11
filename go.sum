@@ -1,3 +1,7 @@
+github.com/Ali127Dev/xerr v1.1.1 h1:kawUKKFcQqSQxFktrNiu9UNRxj4pYDfhCZE56B3dVI4=
+github.com/Ali127Dev/xerr v1.1.1/go.mod h1:+FbbmwfEIzIsXPbRxSwtbqEpkLglWwMW69Xy5sxs0To=
+github.com/Ali127Dev/xoutbox v0.0.2 h1:pOjnwyTNQuDUKkDQKgVfTyJXhuu0a1FDBuxkim8RlHY=
+github.com/Ali127Dev/xoutbox v0.0.2/go.mod h1:9s2UiYPr2jYO6YpSubnBz6kxf4C0OUmlDROgYZFCD0M=
 github.com/avast/retry-go v3.0.0+incompatible h1:4SOWQ7Qs+oroOTQOYnAHqelpCO0biHSxpiH9JdtuBj0=
 github.com/avast/retry-go v3.0.0+incompatible/go.mod h1:XtSnn+n/sHqQIpZ10K1qAevBhOOCWBLXXy3hyiqqBrY=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
