@@ -3,22 +3,19 @@ package usecase
 import (
 	"context"
 
-	"github.com/Ali127Dev/Notification_Service/internal/application/retry"
 	"github.com/Ali127Dev/Notification_Service/internal/domain/port"
 )
 
 type ProcessNotification struct {
-	repo          port.NotificationRepository
-	sender        port.NotificationSender
-	consumerRetry *retry.Runner
+	repo   port.NotificationRepository
+	sender port.NotificationSender
 }
 
 func NewProcessNotification(
 	repo port.NotificationRepository,
 	sender port.NotificationSender,
-	consumerRetry *retry.Runner,
 ) *ProcessNotification {
-	return &ProcessNotification{repo: repo, sender: sender, consumerRetry: consumerRetry}
+	return &ProcessNotification{repo: repo, sender: sender}
 }
 
 type ProcessNotificationRequest struct {
@@ -36,14 +33,16 @@ func (uc *ProcessNotification) Execute(ctx context.Context, req ProcessNotificat
 	}
 
 	notification.IncrementAttempts()
-	err = uc.consumerRetry.Do(func() error {
-		return uc.sender.Send(ctx, notification)
-	})
+	if err := uc.repo.Update(ctx, notification); err != nil {
+		return err
+	}
+
+	err = uc.sender.Send(ctx, notification)
 	if err != nil {
 		notification.MarkAsFailed()
 
-		if saveErr := uc.repo.Update(ctx, notification); saveErr != nil {
-			return saveErr
+		if updateErr := uc.repo.Update(ctx, notification); updateErr != nil {
+			return updateErr
 		}
 
 		return err
