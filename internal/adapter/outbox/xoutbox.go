@@ -1,4 +1,4 @@
-package adapter
+package outbox
 
 import (
 	"context"
