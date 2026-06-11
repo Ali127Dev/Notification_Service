@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"context"
+
 	"github.com/Ali127Dev/Notification_Service/internal/application/retry"
 	"github.com/Ali127Dev/Notification_Service/internal/domain/port"
 )
@@ -23,8 +25,8 @@ type ProcessNotificationRequest struct {
 	NotificationID string
 }
 
-func (uc *ProcessNotification) Execute(req ProcessNotificationRequest) error {
-	notification, err := uc.repo.FindByID(req.NotificationID)
+func (uc *ProcessNotification) Execute(ctx context.Context, req ProcessNotificationRequest) error {
+	notification, err := uc.repo.FindByID(ctx, req.NotificationID)
 	if err != nil {
 		return err
 	}
@@ -35,12 +37,12 @@ func (uc *ProcessNotification) Execute(req ProcessNotificationRequest) error {
 
 	notification.IncrementAttempts()
 	err = uc.consumerRetry.Do(func() error {
-		return uc.sender.Send(notification)
+		return uc.sender.Send(ctx, notification)
 	})
 	if err != nil {
 		notification.MarkAsFailed()
 
-		if saveErr := uc.repo.Update(notification); saveErr != nil {
+		if saveErr := uc.repo.Update(ctx, notification); saveErr != nil {
 			return saveErr
 		}
 
@@ -51,5 +53,5 @@ func (uc *ProcessNotification) Execute(req ProcessNotificationRequest) error {
 		return err
 	}
 
-	return uc.repo.Update(notification)
+	return uc.repo.Update(ctx, notification)
 }

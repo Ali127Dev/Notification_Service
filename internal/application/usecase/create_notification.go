@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"context"
+
 	"github.com/Ali127Dev/Notification_Service/internal/application/retry"
 	"github.com/Ali127Dev/Notification_Service/internal/domain/entity"
 	"github.com/Ali127Dev/Notification_Service/internal/domain/event"
@@ -34,7 +36,7 @@ type CreateNotificationRequest struct {
 	Body    []byte
 }
 
-func (uc *CreateNotification) Execute(req CreateNotificationRequest) (*entity.Notification, error) {
+func (uc *CreateNotification) Execute(ctx context.Context, req CreateNotificationRequest) (*entity.Notification, error) {
 	notification, err := entity.NewNotification(
 		uc.idGen.NewID(),
 		req.To,
@@ -47,7 +49,7 @@ func (uc *CreateNotification) Execute(req CreateNotificationRequest) (*entity.No
 		return nil, err
 	}
 
-	if err := uc.repo.Save(notification); err != nil {
+	if err := uc.repo.Save(ctx, notification); err != nil {
 		return nil, err
 	}
 
@@ -55,7 +57,7 @@ func (uc *CreateNotification) Execute(req CreateNotificationRequest) (*entity.No
 		ID: notification.ID(),
 	}
 	err = uc.publisherRetry.Do(func() error {
-		return uc.producer.Publish(evt)
+		return uc.producer.Publish(ctx, evt)
 	})
 	if err != nil {
 		return nil, err
